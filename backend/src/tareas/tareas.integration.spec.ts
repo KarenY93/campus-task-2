@@ -150,7 +150,5 @@ describe('Tareas HTTP', () => {
     await request(app.getHttpServer()).delete('/tareas/1').expect(500);
   });
 });
-function expect(body: any) {
-  throw new Error('Function not implemented.');
-}
+
 
