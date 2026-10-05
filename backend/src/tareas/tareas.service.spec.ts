@@ -53,5 +53,75 @@ describe('TareasService', () => {
     );
   });
 
-  
+    // 1. Prueba obligatoria del taller
+  it('elimina la tarea y devuelve la fila eliminada', async () => {
+    const eliminada = { id: 1, titulo: 'Leer la guía de la clase 2' };
+    query.mockResolvedValue({ rows: [eliminada] });
+
+    await expect(service.eliminar(1)).resolves.toEqual(eliminada);
+    expect(query).toHaveBeenCalledWith(
+      'DELETE FROM tareas WHERE id = $1 RETURNING id, titulo',
+      [1],
+    );
+  });
+
+  // 2. Consulta parametrizada: el id no se concatena en el SQL
+  it('no concatena el id dentro del texto SQL', async () => {
+    query.mockResolvedValue({ rows: [{ id: 5, titulo: 'X' }] });
+
+    await service.eliminar(5);
+
+    const [sql] = query.mock.calls[0];
+    expect(sql).toContain('$1');
+    expect(sql).not.toContain('5');
+  });
+
+  // 3. El id viaja como parámetro numérico
+  it('envía el id como number en los parámetros', async () => {
+    query.mockResolvedValue({ rows: [{ id: 7, titulo: 'Y' }] });
+
+    await service.eliminar(7);
+
+    const [, params] = query.mock.calls[0];
+    expect(params).toEqual([7]);
+    expect(typeof params[0]).toBe('number');
+  });
+
+  // 4. Id inexistente: no devuelve una tarea
+  it('devuelve undefined cuando el id no existe', async () => {
+    query.mockResolvedValue({ rows: [] });
+
+    await expect(service.eliminar(999)).resolves.toBeUndefined();
+    expect(query).toHaveBeenCalledWith(
+      'DELETE FROM tareas WHERE id = $1 RETURNING id, titulo',
+      [999],
+    );
+  });
+
+  // 5. Una sola consulta por llamada
+  it('ejecuta una sola consulta al eliminar', async () => {
+    query.mockResolvedValue({ rows: [{ id: 2, titulo: 'Z' }] });
+
+    await service.eliminar(2);
+
+    expect(query).toHaveBeenCalledTimes(1);
+  });
+
+  // 6. Los errores de la base de datos no se ocultan
+  it('propaga el error si la base de datos falla', async () => {
+    query.mockRejectedValue(new Error('fallo de conexión'));
+
+    await expect(service.eliminar(1)).rejects.toThrow('fallo de conexión');
+  });
+
+  // 7. Usa el id recibido, no uno fijo
+  it('elimina la tarea correspondiente al id recibido', async () => {
+    const eliminada = { id: 42, titulo: 'Otra tarea' };
+    query.mockResolvedValue({ rows: [eliminada] });
+
+    await expect(service.eliminar(42)).resolves.toEqual(eliminada);
+    expect(query).toHaveBeenCalledWith(expect.stringContaining('DELETE'), [
+      42,
+    ]);
+  });
 });
