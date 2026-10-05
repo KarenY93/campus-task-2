@@ -1,4 +1,4 @@
-import {Body,Controller,Get,NotFoundException,Param,ParseIntPipe,Patch,Post,} from '@nestjs/common';
+import {Body,Controller,Delete,Get,NotFoundException,Param,ParseIntPipe,Patch,Post,} from '@nestjs/common';
 import { Tarea } from './tarea.model';
 import { TareasService } from './tareas.service';
 
@@ -26,5 +26,15 @@ export class TareasController {
       throw new NotFoundException(`No existe la tarea ${id}`);
     }
     return tarea;
+  }
+
+  @Delete(':id')
+  async eliminar(
+    @Param('id') id: string) {
+    const tarea = await this.tareasService.eliminar(Number(id));
+    if (!tarea) {
+      throw new NotFoundException(`No existe la tarea ${id}`);
+    }
+    return tarea; 
   }
 }
