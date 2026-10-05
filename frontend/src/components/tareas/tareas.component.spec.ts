@@ -13,7 +13,12 @@ describe('TareasComponent', () => {
   ];
 
   beforeEach(async () => {
-    tareasService = jasmine.createSpyObj('TareasService', ['listar', 'crear']);
+    tareasService = jasmine.createSpyObj('TareasService', [
+      'listar',
+      'crear',
+      'actualizar',
+      'eliminar',
+    ]);
     tareasService.listar.and.returnValue(of(iniciales));
 
     await TestBed.configureTestingModule({
@@ -55,5 +60,72 @@ describe('TareasComponent', () => {
       'Leer la guía de la clase 2',
       'Preparar el entorno',
     ]);
+  });
+
+  // Ayudantes para las pruebas nuevas
+  function montarConLista(lista: Tarea[]): HTMLElement {
+    tareasService.listar.and.returnValue(of(lista));
+    fixture = TestBed.createComponent(TareasComponent);
+    fixture.detectChanges();
+    return fixture.nativeElement;
+  }
+
+  function botonEn(contenedor: Element, texto: string): HTMLButtonElement {
+    const boton = Array.from(contenedor.querySelectorAll('button')).find(
+      (b) => b.textContent?.trim() === texto,
+    );
+    expect(boton).withContext(`botón ${texto}`).toBeDefined();
+    return boton as HTMLButtonElement;
+  }
+
+  it('edita una tarea al pulsar Editar, escribir y pulsar Guardar', () => {
+    // Preparar
+    const elemento = montarConLista([
+      { id: 1, titulo: 'Leer la guía de la clase 2' },
+      { id: 2, titulo: 'Preparar el entorno' },
+    ]);
+    tareasService.actualizar.and.returnValue(
+      of({ id: 1, titulo: 'Título nuevo' }),
+    );
+
+    // Ejecutar
+    const primera = elemento.querySelectorAll('li')[0];
+    botonEn(primera, 'Editar').click();
+    fixture.detectChanges();
+
+    const campo = elemento.querySelector('.editar-input') as HTMLInputElement;
+    expect(campo).not.toBeNull();
+    campo.value = 'Título nuevo';
+    botonEn(elemento.querySelectorAll('li')[0], 'Guardar').click();
+    fixture.detectChanges();
+
+    // Verificar
+    expect(tareasService.actualizar).toHaveBeenCalledWith(1, 'Título nuevo');
+    const titulos = Array.from(elemento.querySelectorAll('.titulo')).map(
+      (nodo) => nodo.textContent,
+    );
+    expect(titulos).toEqual(['Título nuevo', 'Preparar el entorno']);
+  });
+
+  it('elimina una tarea al pulsar Eliminar y deja las demás', () => {
+    // Preparar
+    const elemento = montarConLista([
+      { id: 1, titulo: 'Leer la guía de la clase 2' },
+      { id: 2, titulo: 'Preparar el entorno' },
+    ]);
+    tareasService.eliminar.and.returnValue(
+      of({ id: 1, titulo: 'Leer la guía de la clase 2' }),
+    );
+
+    // Ejecutar
+    botonEn(elemento.querySelectorAll('li')[0], 'Eliminar').click();
+    fixture.detectChanges();
+
+    // Verificar
+    expect(tareasService.eliminar).toHaveBeenCalledWith(1);
+    const titulos = Array.from(elemento.querySelectorAll('.titulo')).map(
+      (nodo) => nodo.textContent,
+    );
+    expect(titulos).toEqual(['Preparar el entorno']);
   });
 });
