@@ -82,7 +82,7 @@ describe('Tareas HTTP', () => {
       .expect(404);
   });
 
-    // 1. Obligatoria: DELETE existente
+  // 1. Obligatoria: DELETE existente
   it('DELETE /tareas/:id elimina la tarea y responde 200', async () => {
     query.mockResolvedValue({
       rows: [{ id: 1, titulo: 'Leer la guía de la clase 2' }],
@@ -150,5 +150,3 @@ describe('Tareas HTTP', () => {
     await request(app.getHttpServer()).delete('/tareas/1').expect(500);
   });
 });
-
-

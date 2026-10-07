@@ -40,7 +40,7 @@ describe('TareasService', () => {
     );
   });
 
-    it('actualiza el título y devuelve la fila actualizada', async () => {
+  it('actualiza el título y devuelve la fila actualizada', async () => {
     const actualizada = { id: 1, titulo: 'Nuevo título' };
     query.mockResolvedValue({ rows: [actualizada] });
 
@@ -53,7 +53,7 @@ describe('TareasService', () => {
     );
   });
 
-    // 1. Prueba obligatoria del taller
+  // 1. Prueba obligatoria del taller
   it('elimina la tarea y devuelve la fila eliminada', async () => {
     const eliminada = { id: 1, titulo: 'Leer la guía de la clase 2' };
     query.mockResolvedValue({ rows: [eliminada] });
@@ -120,8 +120,6 @@ describe('TareasService', () => {
     query.mockResolvedValue({ rows: [eliminada] });
 
     await expect(service.eliminar(42)).resolves.toEqual(eliminada);
-    expect(query).toHaveBeenCalledWith(expect.stringContaining('DELETE'), [
-      42,
-    ]);
+    expect(query).toHaveBeenCalledWith(expect.stringContaining('DELETE'), [42]);
   });
 });

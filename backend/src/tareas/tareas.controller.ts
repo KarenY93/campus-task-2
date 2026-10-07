@@ -1,10 +1,20 @@
-import {Body,Controller,Delete,Get,NotFoundException,Param,ParseIntPipe,Patch,Post,} from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  NotFoundException,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { Tarea } from './tarea.model';
 import { TareasService } from './tareas.service';
 
 @Controller('tareas')
 export class TareasController {
-  constructor(private readonly tareasService: TareasService) { }
+  constructor(private readonly tareasService: TareasService) {}
 
   @Get()
   listar(): Promise<Tarea[]> {
@@ -29,12 +39,11 @@ export class TareasController {
   }
 
   @Delete(':id')
-  async eliminar(
-    @Param('id') id: string) {
+  async eliminar(@Param('id') id: string) {
     const tarea = await this.tareasService.eliminar(Number(id));
     if (!tarea) {
       throw new NotFoundException(`No existe la tarea ${id}`);
     }
-    return tarea; 
+    return tarea;
   }
 }
