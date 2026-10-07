@@ -1,12 +1,13 @@
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
+import { App } from 'supertest/types'; // CAMBIO 1: import nuevo
 import { DatabaseService } from '../database/database.service';
 import { TareasController } from './tareas.controller';
 import { TareasService } from './tareas.service';
 
 describe('Tareas HTTP', () => {
-  let app: INestApplication;
+  let app: INestApplication<App>; // CAMBIO 2: tipado con App
   const query = jest.fn();
 
   beforeEach(async () => {
@@ -117,7 +118,8 @@ describe('Tareas HTTP', () => {
 
     await request(app.getHttpServer()).delete('/tareas/7').expect(200);
 
-    const [, params] = query.mock.calls[0];
+    // CAMBIO 3: tipado de los argumentos de la llamada
+    const [, params] = query.mock.calls[0] as [string, unknown[]];
     expect(params).toEqual([7]);
     expect(typeof params[0]).toBe('number');
   });

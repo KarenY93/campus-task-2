@@ -71,7 +71,8 @@ describe('TareasService', () => {
 
     await service.eliminar(5);
 
-    const [sql] = query.mock.calls[0];
+    // CAMBIO: tipado de los argumentos de la llamada
+    const [sql] = query.mock.calls[0] as [string, unknown[]];
     expect(sql).toContain('$1');
     expect(sql).not.toContain('5');
   });
@@ -82,7 +83,8 @@ describe('TareasService', () => {
 
     await service.eliminar(7);
 
-    const [, params] = query.mock.calls[0];
+    // CAMBIO: tipado de los argumentos de la llamada
+    const [, params] = query.mock.calls[0] as [string, unknown[]];
     expect(params).toEqual([7]);
     expect(typeof params[0]).toBe('number');
   });
