@@ -34,10 +34,10 @@ module.exports = tseslint.config(
   },
   {
     files: ["**/*.html"],
-    extends: [
+    extends: /** @type {any[]} */ ([
       ...angular.configs.templateRecommended,
       ...angular.configs.templateAccessibility,
-    ],
+    ]),
     rules: {},
   }
 );
