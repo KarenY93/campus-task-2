@@ -29,7 +29,7 @@ export class TareasService {
     return resultado.rows[0];
   }
 
-  async eliminar(id: number): Promise<Tarea> {
+  async eliminar(id: number): Promise<Tarea | undefined> {
     const resultado = await this.db.query<Tarea>(
       'DELETE FROM tareas WHERE id = $1 RETURNING id, titulo',
       [id],

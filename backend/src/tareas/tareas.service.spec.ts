@@ -1,10 +1,14 @@
+import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { Test } from '@nestjs/testing';
 import { DatabaseService } from '../database/database.service';
+import { Tarea } from './tarea.model';
 import { TareasService } from './tareas.service';
 
 describe('TareasService', () => {
   let service: TareasService;
-  const query = jest.fn();
+  const query = jest.fn<
+    (sql: string, params?: unknown[]) => Promise<{ rows: Tarea[] }>
+  >();
 
   beforeEach(async () => {
     query.mockReset();
@@ -71,10 +75,9 @@ describe('TareasService', () => {
 
     await service.eliminar(5);
 
-    // CAMBIO: tipado de los argumentos de la llamada
-    const [sql] = query.mock.calls[0] as [string, unknown[]];
+    const [sql] = query.mock.calls[0];
     expect(sql).toContain('$1');
-    expect(sql).not.toContain('5');
+    expect(sql).toBe('DELETE FROM tareas WHERE id = $1 RETURNING id, titulo');
   });
 
   // 3. El id viaja como parámetro numérico
@@ -83,10 +86,9 @@ describe('TareasService', () => {
 
     await service.eliminar(7);
 
-    // CAMBIO: tipado de los argumentos de la llamada
-    const [, params] = query.mock.calls[0] as [string, unknown[]];
+    const [, params] = query.mock.calls[0];
     expect(params).toEqual([7]);
-    expect(typeof params[0]).toBe('number');
+    expect(typeof params?.[0]).toBe('number');
   });
 
   // 4. Id inexistente: no devuelve una tarea

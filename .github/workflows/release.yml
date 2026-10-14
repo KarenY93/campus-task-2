@@ -1,0 +1,47 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  id-token: write
+
+jobs: 
+  release:
+    runs-on: ubuntu-latest
+      
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '24'
+      - name: Backend - testing and build
+        working-directory: ./backend
+        run: |
+          npm ci
+          npm test
+          npm run build
+      - name: Backend - version.json
+        working-directory: ./backend
+        run: |
+          jp -n --arg v "${GITHUB_REF_NAME#v}" --arg c "$GITHUB_SHA" --arg b "GITHUB_RUN_NUMBER"
+            '{version: $v,commit: $c,build: $b}' > version.json
+      - name: Frontend - testing and build
+        working-directory: ./frontend
+        run: |
+          npm ci
+          npm test -- --watch=false --browser=ChromeHeadless
+          npm run build
+      - name: Empaquetar 
+        run: |
+          V="${GITHUB_REF_NAME#v}"
+          (cd backend && zip -r "../campus-task-2-backend-$V.zip" dist package.json package-lock.json version.json)
+          (cd frontend/dist/frontend && zip -r "../../campus-task-2-frontend-$V.zip")
+          sha256sum campus-task-2-*-zip > SHA256SUMS.txt
+      - name: Publicar release
+        env: 
+          GH_TOKEN: ${{github.token}}
+        run: |
+          gh release create "$GITHUB_REF_NAME" campus-task-2-backend-*.zip campus-task-2-frontend-*.zip 
+          SHA256SUMS.txt --title "$GITHUB_REF_NAME" --notes "Release $GITHUB_REF_NAME"
